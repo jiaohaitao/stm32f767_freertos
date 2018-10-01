@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F767xx,USE_HAL_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\OBJ;..\USER;..\HALLIB\STM32F7xx_HAL_Driver\Inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\FREERTOS\include;..\FREERTOS\portable\MemMang;..\FREERTOS\portable\RVDS\ARM_CM7\r0p1</IncludePath>
+              <IncludePath>..\CORE;..\OBJ;..\USER;..\HALLIB\STM32F7xx_HAL_Driver\Inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\FREERTOS\include;..\FREERTOS\portable\MemMang;..\FREERTOS\portable\RVDS\ARM_CM7\r0p1;..\TraceRecorder\include;..\TraceRecorder\streamports\Jlink_RTT\include;..\TraceRecorder\config</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -576,6 +576,31 @@
               <FileName>port.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FREERTOS\portable\RVDS\ARM_CM7\r0p1\port.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>TraceRecorder</GroupName>
+          <Files>
+            <File>
+              <FileName>trcKernelPort.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TraceRecorder\trcKernelPort.c</FilePath>
+            </File>
+            <File>
+              <FileName>trcStreamingRecorder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TraceRecorder\trcStreamingRecorder.c</FilePath>
+            </File>
+            <File>
+              <FileName>SEGGER_RTT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TraceRecorder\streamports\Jlink_RTT\SEGGER_RTT.c</FilePath>
+            </File>
+            <File>
+              <FileName>trcStreamingPort.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TraceRecorder\streamports\Jlink_RTT\trcStreamingPort.c</FilePath>
             </File>
           </Files>
         </Group>

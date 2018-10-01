@@ -51,6 +51,7 @@ int main(void)
 		printf("stm32f767-------\r\n");
     LED_Init();                     //初始化LED
 	
+		vTraceEnable(TRC_INIT);
     //创建开始任务
     xTaskCreate((TaskFunction_t )start_task,            //任务函数
                 (const char*    )"start_task",          //任务名称
