@@ -1,4 +1,6 @@
 #include "usart.h"
+#include "queue.h"
+extern QueueHandle_t xQueue_Uart1;
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用os,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -56,10 +58,18 @@ u16 USART_RX_STA=0;       //接收状态标记
 u8 aRxBuffer[RXBUFFERSIZE];//HAL库使用的串口接收缓冲
 UART_HandleTypeDef UART2_Handler; //UART句柄
 
+
+#define PRIO_ISR_UART2 2 /* the hardware priority level */
+traceHandle Uart2Handle;
+traceString Uart2_uechannel;
+
 //初始化IO 串口1 
 //bound:波特率
 void uart_init(u32 bound)
 {	
+	Uart2_uechannel = xTraceRegisterString("uart2_isr_log");
+	Uart2Handle = xTraceSetISRProperties("ISRUsart2", PRIO_ISR_UART2);	
+	
 	//UART 初始化设置
 	UART2_Handler.Instance=USART2;					    //USART1
 	UART2_Handler.Init.BaudRate=bound;				    //波特率
@@ -100,7 +110,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 		
 #if EN_USART2_RX
 		HAL_NVIC_EnableIRQ(USART2_IRQn);				//使能USART1中断通道
-		HAL_NVIC_SetPriority(USART2_IRQn,3,3);			//抢占优先级3，子优先级3
+		HAL_NVIC_SetPriority(USART2_IRQn,2,0);			//抢占优先级2
 #endif	
 	}
 
@@ -128,16 +138,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
 				}		 
 			}
-		}
-
+		}	
 	}
 }
  
 //串口1中断服务程序
 void USART2_IRQHandler(void)                	
 { 
+	BaseType_t xResult;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;	
+	u8 Res;	
 	u32 timeout=0;
     u32 maxDelay=0x1FFFF;
+	vTraceStoreISRBegin(Uart2Handle);		
 	
 	HAL_UART_IRQHandler(&UART2_Handler);	//调用HAL库中断处理公用函数
 	
@@ -154,6 +167,17 @@ void USART2_IRQHandler(void)
         timeout++; //超时处理
         if(timeout>maxDelay) break;	
 	}
+	
+		Res=aRxBuffer[0];
+		if(xQueue_Uart1!=NULL)
+		{
+				xQueueSendFromISR(xQueue_Uart1,
+				(void *)&Res,
+				&xHigherPriorityTaskWoken);		
+		}
+		//vTracePrintF(Uart2_uechannel,	"rx%x:", Res);	
+		vTraceStoreISREnd(0);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken)		
 } 
 #endif	
 

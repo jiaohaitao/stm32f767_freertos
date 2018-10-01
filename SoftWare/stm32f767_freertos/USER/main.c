@@ -6,6 +6,7 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 /************************************************
  ALIENTEK 阿波罗STM32F7开发板 实验1
  跑马灯实验-HAL库版本
@@ -27,7 +28,7 @@ void start_task(void *pvParameters);
 //任务优先级
 #define LED0_TASK_PRIO		2
 //任务堆栈大小	
-#define LED0_STK_SIZE 		50  
+#define LED0_STK_SIZE 		128  
 //任务句柄
 TaskHandle_t LED0Task_Handler;
 //任务函数
@@ -36,11 +37,14 @@ void led0_task(void *pvParameters);
 //任务优先级
 #define LED1_TASK_PRIO		3
 //任务堆栈大小	
-#define LED1_STK_SIZE 		50  
+#define LED1_STK_SIZE 		128  
 //任务句柄
 TaskHandle_t LED1Task_Handler;
 //任务函数
 void led1_task(void *pvParameters);
+
+QueueHandle_t xQueue_Uart1 = NULL;
+
 int main(void)
 {
     Cache_Enable();                 //打开L1-Cache
@@ -52,6 +56,11 @@ int main(void)
     LED_Init();                     //初始化LED
 	
 		vTraceEnable(TRC_INIT);
+	
+		xQueue_Uart1 = xQueueCreate(500, sizeof(uint8_t));
+		if( xQueue_Uart1 == 0 )
+		{
+		}	
     //创建开始任务
     xTaskCreate((TaskFunction_t )start_task,            //任务函数
                 (const char*    )"start_task",          //任务名称
@@ -92,21 +101,38 @@ void led0_task(void *pvParameters)
         HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);   	
 				vTaskDelay(500);				
 				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET); 
-        vTaskDelay(500);			
+        vTaskDelay(500);		
+        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
+				vTaskDelay(500);				
+				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
+				vTaskDelay(500);				
     }
 }   
 
 //LED1任务函数
 void led1_task(void *pvParameters)
 {
-    while(1)
-    {
-        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
-				vTaskDelay(500);				
-				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
-				vTaskDelay(500);			
-    }
+	traceString Task1_uechannel;
+	unsigned int cnt=0;
+	BaseType_t xResult;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(1000); 
+	uint8_t ucQueueMsgValue;
+	Task1_uechannel = xTraceRegisterString("Task1_log");
+	
+	while(1)
+	{
+		xResult = xQueueReceive(xQueue_Uart1,
+		(void *)&ucQueueMsgValue,
+		(TickType_t)xMaxBlockTime);
+		if(xResult == pdPASS)
+		{
+				vTracePrintF(Task1_uechannel,	"rx%x:", ucQueueMsgValue);		
+		}
+		else
+		{
+		}
+	}
 }
 
