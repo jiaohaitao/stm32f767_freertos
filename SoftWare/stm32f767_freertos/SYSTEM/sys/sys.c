@@ -38,8 +38,8 @@ void Cache_Enable(void)
 //pllp:系统时钟的主PLL分频系数(PLL之后的分频),取值范围:2,4,6,8.(仅限这4个值!)
 //pllq:USB/SDIO/随机数产生器等的主PLL分频系数(PLL之后的分频),取值范围:2~15.
 
-//外部晶振为25M的时候,推荐值:plln=432,pllm=25,pllp=2,pllq=9.
-//得到:Fvco=25*(432/25)=432Mhz
+//外部晶振为25M的时候,推荐值:plln=432,pllm=16,pllp=2,pllq=9.
+//得到:Fvco=16*(432/25)=432Mhz
 //     Fsys=432/2=216Mhz
 //     Fusb=432/9=48Mhz
 //返回值:0,成功;1,失败
@@ -53,10 +53,11 @@ void Stm32_Clock_Init(u32 plln,u32 pllm,u32 pllp,u32 pllq)
  
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);//设置调压器输出电压级别，以便在器件未以最大频率工作
       
-    RCC_OscInitStructure.OscillatorType=RCC_OSCILLATORTYPE_HSE;    //时钟源为HSE
-    RCC_OscInitStructure.HSEState=RCC_HSE_ON;                      //打开HSE
+    RCC_OscInitStructure.OscillatorType=RCC_OSCILLATORTYPE_HSI;    //时钟源为HSE
+    RCC_OscInitStructure.HSEState=RCC_HSE_OFF;                      //打开HSE
+		RCC_OscInitStructure.HSIState=RCC_HSI_ON;                      //打开HSE
     RCC_OscInitStructure.PLL.PLLState=RCC_PLL_ON;				   //打开PLL
-    RCC_OscInitStructure.PLL.PLLSource=RCC_PLLSOURCE_HSE;          //PLL时钟源选择HSE
+    RCC_OscInitStructure.PLL.PLLSource=RCC_PLLSOURCE_HSI;          //PLL时钟源选择HSE
     RCC_OscInitStructure.PLL.PLLM=pllm;	//主PLL和音频PLL分频系数(PLL之前的分频)
     RCC_OscInitStructure.PLL.PLLN=plln; //主PLL倍频系数(PLL倍频)
     RCC_OscInitStructure.PLL.PLLP=pllp; //系统时钟的主PLL分频系数(PLL之后的分频)

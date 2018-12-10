@@ -41,14 +41,14 @@ void led0_task(void *pvParameters);
 TaskHandle_t LED1Task_Handler;
 //任务函数
 void led1_task(void *pvParameters);
-
 int main(void)
 {
     Cache_Enable();                 //打开L1-Cache
     HAL_Init();				        //初始化HAL库
-    Stm32_Clock_Init(432,25,2,9);   //设置时钟,216Mhz 
+    Stm32_Clock_Init(432,16,2,9);   //设置时钟,216Mhz 
     delay_init(216);                //延时初始化
 		uart_init(115200);		        //串口初始化
+		printf("stm32f767-------\r\n");
     LED_Init();                     //初始化LED
 	
     //创建开始任务
